@@ -5,6 +5,7 @@ import Register from "./components/Register";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./components/Dashboard";
 import AvoidAuth from "./components/AvoidAuth";
+import Recipe from "./components/Recipe";
 
 function App() {
   return (
@@ -35,10 +36,18 @@ function App() {
           }
         />
         <Route
-          path="/home"
+          path="/dashboard"
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/recipe/:id"
+          element={
+            <ProtectedRoute>
+              <Recipe />
             </ProtectedRoute>
           }
         />
