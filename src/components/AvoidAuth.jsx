@@ -25,8 +25,6 @@ export default function AvoidAuth({ children }) {
         throw new Error(response.text);
       }
 
-      const receivedData = await response.json();
-      console.log(receivedData);
       setIsAuthenticated(true);
     } catch (error) {
       console.error(error);
