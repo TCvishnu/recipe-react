@@ -6,7 +6,7 @@ import Comments from "./Comments";
 
 export default function Recipe() {
   const backendURL = process.env.REACT_APP_BACKEND_URL;
-  const { id } = useParams();
+  const { recipeID } = useParams();
 
   const [recipe, setRecipe] = useState([]);
   const [displaySteps, setDisplaySteps] = useState(false);
@@ -18,7 +18,7 @@ export default function Recipe() {
   const fetchRecipe = async () => {
     const authToken = localStorage.getItem("authToken");
     try {
-      const response = await fetch(`${backendURL}/api/recipes/${id}`, {
+      const response = await fetch(`${backendURL}/api/recipes/${recipeID}`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${authToken}`,

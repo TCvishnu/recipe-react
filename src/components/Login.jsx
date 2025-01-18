@@ -57,7 +57,7 @@ export default function Login() {
 
       localStorage.setItem("authToken", receivedData.token);
 
-      navigate("/home");
+      navigate("/dashboard");
     } catch (error) {
       console.error(error);
     }
