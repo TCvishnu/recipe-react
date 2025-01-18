@@ -10,6 +10,9 @@ module.exports = {
         xxs: "0.6rem",
         xxxs: "0.5rem",
       },
+      listStyleType: {
+        square: "square",
+      },
     },
   },
   plugins: [],

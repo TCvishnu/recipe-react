@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, forwardRef } from "react";
 import { useParams } from "react-router-dom";
 
 import { Icon } from "@iconify/react";
+import Comments from "./Comments";
 
 export default function Recipe() {
   const backendURL = process.env.REACT_APP_BACKEND_URL;
@@ -9,6 +10,10 @@ export default function Recipe() {
 
   const [recipe, setRecipe] = useState([]);
   const [displaySteps, setDisplaySteps] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+
+  const handleOpenComments = () => setShowComments(true);
+  const handleCloseComments = () => setShowComments(false);
 
   const fetchRecipe = async () => {
     const authToken = localStorage.getItem("authToken");
@@ -49,7 +54,7 @@ export default function Recipe() {
         className="w-full h-80 bg-cover bg-center flex flex-col justify-end"
         style={{ backgroundImage: 'url("/foodDp.png")' }}
       >
-        <div className="flex h-auto bg-gradient-to-t from-white via-gray-100 via-50% to-gray-50/50 px-2 py-2 flex-col gap-3">
+        <div className="flex h-auto bg-gradient-to-t from-white via-gray-100 via-50% to-gray-50/50 px-2 py-2 flex-col gap-3 rounded-t-lg">
           <h1 className=" text-xl font-righteous">{recipe.name}</h1>
           <div className="flex text-gray-700 gap-6">
             <div className="flex gap-1 items-center">
@@ -86,6 +91,13 @@ export default function Recipe() {
                 {recipe.is_veg ? "Veggie" : "Non-veggie"}
               </span>
             </div>
+
+            <button className=" flex items-center" onClick={handleOpenComments}>
+              <Icon
+                icon="material-symbols:comment-outline-rounded"
+                className=" text-[#F5BA20] size-6"
+              />
+            </button>
           </div>
         </div>
       </div>
@@ -93,7 +105,7 @@ export default function Recipe() {
       <div className="mt-10 font-righteous flex justify-evenly items-center">
         <button
           onClick={showIngredients}
-          className={`w-40 h-10 rounded-sm ${
+          className={`w-40 h-10 rounded-md ${
             displaySteps ? "" : " bg-[#2eb800] text-white"
           }`}
         >
@@ -101,7 +113,7 @@ export default function Recipe() {
         </button>
         <button
           onClick={showSteps}
-          className={`w-40 h-10 rounded-sm ${
+          className={`w-40 h-10 rounded-md ${
             displaySteps ? "bg-[#2eb800] text-white" : " "
           }`}
         >
@@ -110,14 +122,34 @@ export default function Recipe() {
       </div>
 
       {recipe.ingredients && !displaySteps && (
-        <ul className="w-full px-2 flex flex-col gap-1 mt-4">
+        <ul className="w-full px-4 flex flex-col gap-4 my-4 text-gray-700 ">
           {recipe.ingredients.map((ingredient, index) => (
-            <li key={index} className=" font-semibold">
-              {ingredient}
+            <li
+              key={index}
+              className="font-semibold text-sm border-b border-gray-200"
+            >
+              <div className=" w-full flex justify-between">
+                <span>{ingredient.name}</span>
+                <span>
+                  {ingredient.quantity} {ingredient.unit}
+                </span>
+              </div>
             </li>
           ))}
         </ul>
       )}
+
+      {recipe.ingredients && displaySteps && (
+        <ul className="w-full px-6 flex flex-col gap-3 my-4 list-square">
+          {recipe.steps.map((step, index) => (
+            <li key={index} className="font-semibold text-sm text-gray-600">
+              {step}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {showComments && <Comments onClose={handleCloseComments} />}
     </div>
   );
 }
