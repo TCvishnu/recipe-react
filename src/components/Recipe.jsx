@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 import { Icon } from "@iconify/react";
 import Comments from "./Comments";
 
-export default function Recipe() {
+export default function Recipe({ userEmail }) {
   const backendURL = process.env.REACT_APP_BACKEND_URL;
   const { recipeID } = useParams();
 
@@ -149,7 +149,9 @@ export default function Recipe() {
         </ul>
       )}
 
-      {showComments && <Comments onClose={handleCloseComments} />}
+      {showComments && (
+        <Comments onClose={handleCloseComments} email={userEmail} />
+      )}
     </div>
   );
 }

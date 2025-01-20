@@ -5,6 +5,7 @@ export default function ProtectedRoute({ children }) {
   const backendURL = process.env.REACT_APP_BACKEND_URL;
 
   const [isAuthenticated, setIsAuthenticated] = useState(null);
+  const [userEmail, setUserEmail] = useState(null);
 
   const checkAuth = async () => {
     const authToken = localStorage.getItem("authToken");
@@ -26,6 +27,8 @@ export default function ProtectedRoute({ children }) {
       }
 
       setIsAuthenticated(true);
+      const userData = await response.json();
+      setUserEmail(userData.user.email);
     } catch (error) {
       console.error(error);
       setIsAuthenticated(false);
@@ -44,5 +47,5 @@ export default function ProtectedRoute({ children }) {
     return <Navigate to="/login" replace />;
   }
 
-  return children;
+  return React.cloneElement(children, { userEmail });
 }
