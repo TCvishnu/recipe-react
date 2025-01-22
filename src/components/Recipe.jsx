@@ -1,4 +1,4 @@
-import React, { useState, useEffect, forwardRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 
 import { Icon } from "@iconify/react";
@@ -45,7 +45,29 @@ export default function Recipe({ userEmail }) {
     setDisplaySteps(false);
   };
 
+  const addToRecentRecipes = async () => {
+    const authToken = localStorage.getItem("authToken");
+    try {
+      const response = await fetch(
+        `${backendURL}/api/recent-recipes?recipe_id=${recipeID}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
+    addToRecentRecipes();
     fetchRecipe();
   }, []);
   return (

@@ -8,6 +8,7 @@ export default function Dashboard() {
 
   const [recipePage, setRecipePage] = useState(1);
   const [recipes, setRecipes] = useState([]);
+  const [recentRecipes, setRecentRecipes] = useState([]);
   const [recipesPerRow, setRecipesPerRow] = useState(0);
   const navigate = useNavigate();
 
@@ -85,7 +86,6 @@ export default function Dashboard() {
       }
 
       const receivedData = await response.json();
-      console.log(receivedData.recipes);
       setRecipes(receivedData.recipes);
       setRecipesPerRow(Math.ceil(receivedData.recipes.length / 2));
     } catch (error) {
@@ -93,8 +93,32 @@ export default function Dashboard() {
     }
   };
 
+  const fetchRecentRecipes = async () => {
+    const authToken = localStorage.getItem("authToken");
+
+    try {
+      const response = await fetch(`${backendURL}/api/recent-recipes`, {
+        method: "GET",
+        headers: {
+          "Content-type": "application/json",
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+
+      const receivedData = await response.json();
+      console.log(receivedData.recentRecipes);
+      setRecentRecipes(receivedData.recentRecipes);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
     fetchRecipes();
+    fetchRecentRecipes();
   }, []);
 
   return (
@@ -152,6 +176,17 @@ export default function Dashboard() {
         <div className="flex gap-5 w-auto py-1">
           {recipes.slice(recipesPerRow).map((recipe, index) => (
             <RecipeCard recipe={recipe} key={index} />
+          ))}
+        </div>
+      </div>
+
+      <h2 className=" w-full mt-4 font-bold text-sm">
+        Recently Visited Recipes
+      </h2>
+      <div className="overflow-x-auto w-full custom-scroll">
+        <div className="flex gap-5 w-auto py-1">
+          {recentRecipes.map((recentRecipe, index) => (
+            <RecipeCard recipe={recentRecipe.recipe} key={index} />
           ))}
         </div>
       </div>
