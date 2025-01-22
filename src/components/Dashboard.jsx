@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import RecipeCard from "./RecipeCard";
 
 export default function Dashboard() {
+  let debounceTimeout;
+
   const backendURL = process.env.REACT_APP_BACKEND_URL;
 
   const [recipePage, setRecipePage] = useState(1);
@@ -36,7 +38,7 @@ export default function Dashboard() {
 
   const handleSearch = (e) => {
     const searchTerm = e.target.value;
-    let debounceTimeout;
+
     clearTimeout(debounceTimeout);
 
     debounceTimeout = setTimeout(() => {
@@ -122,7 +124,7 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className=" w-screen h-screen p-2 flex flex-col gap-3 items-center bg-white">
+    <div className=" w-screen h-auto p-2 flex flex-col gap-3 items-center bg-white">
       <header className="w-full flex justify-between items-end">
         <h1 className=" font-righteous text-3xl self-end">Recipyaa.!</h1>
         <div className="hidden sm:flex sm:w-7/12 md:w-8/12 lg:w-7/12 relative h-12">
@@ -181,7 +183,7 @@ export default function Dashboard() {
       </div>
 
       <h2 className=" w-full mt-4 font-bold text-sm">
-        Recently Visited Recipes
+        Recently Visited Recipes ({recentRecipes.length})
       </h2>
       <div className="overflow-x-auto w-full custom-scroll">
         <div className="flex gap-5 w-auto py-1">
