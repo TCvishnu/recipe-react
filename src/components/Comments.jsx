@@ -30,8 +30,6 @@ export default function Comments({ onClose, email }) {
       const receivedData = await response.json();
       setCommentsCount(countTheNumberOfComments(receivedData.comments));
       setComments(receivedData.comments);
-
-      // console.log(receivedData.comments[0]);
     } catch (error) {
       console.error(error);
     }

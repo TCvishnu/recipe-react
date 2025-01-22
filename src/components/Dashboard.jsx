@@ -6,7 +6,6 @@ import RecipeCard from "./RecipeCard";
 export default function Dashboard() {
   const backendURL = process.env.REACT_APP_BACKEND_URL;
 
-  const [search, setSearch] = useState("");
   const [recipePage, setRecipePage] = useState(1);
   const [recipes, setRecipes] = useState([]);
   const [recipesPerRow, setRecipesPerRow] = useState(0);
@@ -29,6 +28,39 @@ export default function Dashboard() {
 
       localStorage.removeItem("authToken");
       navigate("/login");
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleSearch = (e) => {
+    const searchTerm = e.target.value;
+    let debounceTimeout;
+    clearTimeout(debounceTimeout);
+
+    debounceTimeout = setTimeout(() => {
+      searchRecipes(searchTerm);
+    }, 1000);
+  };
+
+  const searchRecipes = async (search) => {
+    const authToken = localStorage.getItem("authToken");
+    try {
+      const response = await fetch(`${backendURL}/api/recipes?q=${search}`, {
+        method: "GET",
+        headers: {
+          "Content-type": "application/json",
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+
+      const receivedData = await response.json();
+      setRecipes(receivedData.recipes);
+      setRecipesPerRow(Math.ceil(receivedData.recipes.length / 2));
     } catch (error) {
       console.error(error);
     }
@@ -92,7 +124,7 @@ export default function Dashboard() {
       </header>
       <div className=" w-full flex justify-center sm:hidden relative mt-2">
         <input
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={handleSearch}
           className=" outline-none w-full h-10 rounded-full bg-gray-100 px-6 text-xs placeholder-gray-700 font-medium"
           placeholder="What are you looking for?"
         />
