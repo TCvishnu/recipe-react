@@ -10,6 +10,8 @@ export default function Comments({ onClose, email }) {
   const [comments, setComments] = useState([]);
   const [typedComment, setTypedComment] = useState("");
   const [isReplying, setIsReplying] = useState(false);
+  const [parentCommendID, setParentCommentID] = useState(null);
+  const [parentCommentName, setParentCommentName] = useState("");
   const [commentsCount, setCommentsCount] = useState(null);
 
   const fetchComments = async () => {
@@ -32,6 +34,7 @@ export default function Comments({ onClose, email }) {
       const receivedData = await response.json();
       setCommentsCount(countTheNumberOfComments(receivedData.comments));
       setComments(receivedData.comments);
+      console.log(receivedData.comments);
     } catch (error) {
       console.error(error);
     }
@@ -82,6 +85,7 @@ export default function Comments({ onClose, email }) {
     const sendData = {
       comment: {
         text: typedComment,
+        parent_comment_id: isReplying ? parentCommendID : null,
       },
     };
 
@@ -100,14 +104,57 @@ export default function Comments({ onClose, email }) {
       }
 
       const receivedData = await response.json();
-      console.log(receivedData);
+      console.log(receivedData.comment);
 
-      setComments((prev) => [receivedData.comment, ...prev]);
       setTypedComment("");
+      if (!isReplying) {
+        setComments((prev) => [receivedData.comment, ...prev]);
+        return;
+      }
+
+      const newReplyComment = {
+        reply: {
+          id: receivedData.comment.id,
+          text: receivedData.comment.text,
+          updated_at: receivedData.comment.updated_at,
+          user: receivedData.comment.user,
+        },
+        updated_at: receivedData.reply.updated_at,
+      };
+
+      setComments((prev) => {
+        return prev.map((comment) => {
+          if (comment.id === parentCommendID) {
+            const replies = [...comment.replies, newReplyComment];
+            return {
+              ...comment,
+              replies,
+            };
+          }
+          return comment;
+        });
+      });
+
+      setParentCommentID(null);
+      setParentCommentName("");
+      setIsReplying(false);
     } catch (error) {
       console.error(error);
     }
   };
+
+  const handleSetupReplying = (replyingToComment) => {
+    setIsReplying(true);
+    setParentCommentID(replyingToComment.id);
+    setParentCommentName(replyingToComment.user.email.split("@")[0]);
+  };
+
+  const stopReplying = () => {
+    setIsReplying(false);
+    setParentCommentID(null);
+    setParentCommentName("");
+  };
+
   useEffect(() => {
     fetchComments();
   }, []);
@@ -124,14 +171,20 @@ export default function Comments({ onClose, email }) {
       <div className="w-11/12 h-20 relative">
         <textarea
           className="w-full bg-[#eaeaea] h-20 rounded-md p-2 outline-none text-xs font-medium"
-          placeholder="Add comment.."
+          placeholder={`${
+            parentCommentName
+              ? `replying to ${parentCommentName}`
+              : "Add comment.."
+          }`}
           onChange={handleCommenting}
           onKeyDown={createComment}
           value={typedComment}
         />
-        <button className="absolute bottom-2 right-2">
-          <Icon icon="majesticons:send" className="size-6 text-[#F5BA20]" />
-        </button>
+        {parentCommendID && (
+          <button className="absolute bottom-2 right-2" onClick={stopReplying}>
+            <Icon icon="mdi:close-thick" className="size-6 text-[#FD7B8B]" />
+          </button>
+        )}
       </div>
 
       <div className="w-11/12 h-1 border-b-2 border-[#e0e0e0] mt-2"></div>
@@ -139,7 +192,7 @@ export default function Comments({ onClose, email }) {
       <div className="w-full flex flex-col gap-5 overflow-x-auto">
         {comments.map((comment, index) => (
           <div key={index} className=" px-6 w-full flex flex-col gap-5">
-            <div className="flex flex-col">
+            <div className="flex flex-col relative">
               <div className=" flex gap-3 items-center">
                 <span
                   className={`font-righteous ${
@@ -157,6 +210,19 @@ export default function Comments({ onClose, email }) {
                 {comment.text}
               </span>
               <div className="w-full border-b h-1"></div>
+
+              <button
+                className=" absolute right-2 top-2"
+                title="reply to this comment"
+                onClick={() => handleSetupReplying(comment)}
+              >
+                <Icon
+                  icon="ic:round-reply"
+                  className={`text-[${
+                    parentCommendID === comment.id ? "#FD7B8B" : "#F5BA20"
+                  }] size-6`}
+                />
+              </button>
             </div>
 
             {comment.replies.map((reply, index) => (
