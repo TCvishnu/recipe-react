@@ -42,6 +42,10 @@ export default function Dashboard() {
     clearTimeout(debounceTimeout);
 
     debounceTimeout = setTimeout(() => {
+      if (!searchTerm) {
+        fetchRecipes();
+        return;
+      }
       searchRecipes(searchTerm);
     }, 1000);
   };
@@ -111,7 +115,6 @@ export default function Dashboard() {
       }
 
       const receivedData = await response.json();
-      console.log(receivedData.recentRecipes);
       setRecentRecipes(receivedData.recentRecipes);
     } catch (error) {
       console.error(error);

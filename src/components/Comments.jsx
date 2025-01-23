@@ -8,6 +8,8 @@ export default function Comments({ onClose, email }) {
 
   const { recipeID } = useParams();
   const [comments, setComments] = useState([]);
+  const [typedComment, setTypedComment] = useState("");
+  const [isReplying, setIsReplying] = useState(false);
   const [commentsCount, setCommentsCount] = useState(null);
 
   const fetchComments = async () => {
@@ -61,6 +63,51 @@ export default function Comments({ onClose, email }) {
       return `${seconds} ${seconds === 1 ? "sedond" : "seconds"} ago`;
     }
   };
+
+  const handleCommenting = (e) => {
+    setTypedComment(e.target.value);
+  };
+
+  const createComment = async (e) => {
+    if (e.key != "Enter") {
+      return;
+    }
+
+    const url = `${backendURL}/api/recipes/${recipeID}/comments?${
+      isReplying ? "reply=true" : "reply=false"
+    }`;
+
+    const authToken = localStorage.getItem("authToken");
+
+    const sendData = {
+      comment: {
+        text: typedComment,
+      },
+    };
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify(sendData),
+      });
+
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+
+      const receivedData = await response.json();
+      console.log(receivedData);
+
+      setComments((prev) => [receivedData.comment, ...prev]);
+      setTypedComment("");
+    } catch (error) {
+      console.error(error);
+    }
+  };
   useEffect(() => {
     fetchComments();
   }, []);
@@ -78,6 +125,9 @@ export default function Comments({ onClose, email }) {
         <textarea
           className="w-full bg-[#eaeaea] h-20 rounded-md p-2 outline-none text-xs font-medium"
           placeholder="Add comment.."
+          onChange={handleCommenting}
+          onKeyDown={createComment}
+          value={typedComment}
         />
         <button className="absolute bottom-2 right-2">
           <Icon icon="majesticons:send" className="size-6 text-[#F5BA20]" />
