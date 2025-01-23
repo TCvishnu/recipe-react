@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
+import CircularProgress from "@mui/material/CircularProgress";
 
 export default function ProtectedRoute({ children }) {
   const backendURL = process.env.REACT_APP_BACKEND_URL;
@@ -40,7 +41,11 @@ export default function ProtectedRoute({ children }) {
   }, []);
 
   if (isAuthenticated === null) {
-    return <div>Loading...</div>;
+    return (
+      <div className="w-screen h-screen flex items-center justify-center">
+        <CircularProgress size="10rem" />
+      </div>
+    );
   }
 
   if (!isAuthenticated) {

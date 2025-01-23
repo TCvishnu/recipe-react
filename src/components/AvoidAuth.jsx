@@ -22,12 +22,12 @@ export default function AvoidAuth({ children }) {
       });
 
       if (!response.ok) {
-        throw new Error(response.text);
+        throw new Error(response.statusText);
       }
 
       setIsAuthenticated(true);
     } catch (error) {
-      console.error(error);
+      console.log(error);
       setIsAuthenticated(false);
     }
   };
