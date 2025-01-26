@@ -6,6 +6,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./components/Dashboard";
 import AvoidAuth from "./components/AvoidAuth";
 import Recipe from "./components/Recipe";
+import UserRecipes from "./components/UserRecipes";
+import CreateRecipe from "./components/CreateRecipe";
 
 function App() {
   return (
@@ -40,6 +42,22 @@ function App() {
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/user-recipes"
+          element={
+            <ProtectedRoute>
+              <UserRecipes />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/user-recipes/create"
+          element={
+            <ProtectedRoute>
+              <CreateRecipe />
             </ProtectedRoute>
           }
         />
