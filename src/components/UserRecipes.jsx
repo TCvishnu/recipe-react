@@ -39,6 +39,8 @@ export default function UserRecipes() {
         <h1 className=" font-righteous text-3xl self-end">Recipyaa.!</h1>
       </header>
 
+      <h2 className=" w-full mt-4 font-bold text-sm">Your Recipes</h2>
+
       <h2 className=" w-full mt-4 font-bold text-sm">
         Recently Visited Recipes ({recentRecipes.length})
       </h2>

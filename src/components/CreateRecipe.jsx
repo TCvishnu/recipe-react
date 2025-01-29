@@ -1,7 +1,16 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Icon } from "@iconify/react";
+import makeAnimated from "react-select/animated";
+import Select from "react-select";
+import foodTags from "../utils/FoodTags";
 
 export default function CreateRecipe() {
+  const inputFieldRef = useRef(null);
+  const animatedComponents = makeAnimated();
+
+  const [recipeName, setRecipeName] = useState("");
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [preparationTime, setPreparationTime] = useState(0);
   const [isVeg, setIsVeg] = useState(true);
   const [steps, setSteps] = useState([""]);
   const [ingredients, setIngredients] = useState([
@@ -35,6 +44,13 @@ export default function CreateRecipe() {
     "packet",
   ];
 
+  const focusFileInput = () => {
+    inputFieldRef.current.click();
+  };
+
+  const handleSelectedTags = (selectedOptions) => {
+    setSelectedTags(selectedOptions);
+  };
   const addStep = () => {
     setSteps((prev) => [...prev, ""]);
   };
@@ -83,9 +99,18 @@ export default function CreateRecipe() {
   };
 
   return (
-    <div className="w-screen h-screen flex items-center justify-center">
-      <form className="w-full sm:w-[30rem] bg-white p-6 rounded-lg sm:shadow-md overflow-y-auto">
-        <h1 className="text-3xl font-semibold text-center text-[#030219] my-3">
+    <div className="w-screen h-screen flex flex-col md:flex-row items-center justify-start overflow-y-auto bg-[#f0f0f0]">
+      <div className="w-full md:w-1/2 min-h-60  flex items-center justify-center">
+        <input type="file" className="hidden" ref={inputFieldRef} />
+        <button onClick={focusFileInput}>
+          <Icon
+            icon="hugeicons:image-upload"
+            className="text-[#030219] size-14"
+          />
+        </button>
+      </div>
+      <form className="w-full sm:w-[30rem] bg-white p-4 rounded-t-xl sm:shadow-md overflow-y-auto">
+        <h1 className="text-3xl font-semibold text-center text-[#030219] mb-3">
           Create a New Recipe
         </h1>
         <div className="my-4">
@@ -136,6 +161,19 @@ export default function CreateRecipe() {
               onClick={() => setIsVeg(false)}
             ></button>
           </div>
+        </div>
+
+        <div className="w-full flex flex-col gap-2 my-3">
+          <span>
+            Tags <span className=" text-[#33cccc]">*</span>
+          </span>
+          <Select
+            value={selectedTags}
+            components={animatedComponents}
+            onChange={handleSelectedTags}
+            options={foodTags.map((tag) => ({ label: tag, value: tag }))}
+            isMulti
+          />
         </div>
 
         <h2 className="my-4">
