@@ -34,6 +34,7 @@ const foodTags = [
   "Grilled",
   "Greek",
   "Halal",
+  "Healthy",
   "High-Protein",
   "Indian",
   "Italian",

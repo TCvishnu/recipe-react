@@ -6,6 +6,7 @@ export default function UserRecipes() {
   const backendURL = process.env.REACT_APP_BACKEND_URL;
 
   const [recentRecipes, setRecentRecipes] = useState([]);
+  const [userRecipes, setUserRecipes] = useState([]);
 
   const fetchRecentRecipes = async () => {
     const authToken = localStorage.getItem("authToken");
@@ -14,7 +15,6 @@ export default function UserRecipes() {
       const response = await fetch(`${backendURL}/api/recent-recipes`, {
         method: "GET",
         headers: {
-          "Content-type": "application/json",
           Authorization: `Bearer ${authToken}`,
         },
       });
@@ -29,7 +29,29 @@ export default function UserRecipes() {
     }
   };
 
+  const fetchUserRecipes = async () => {
+    const authToken = localStorage.getItem("authToken");
+    try {
+      const response = await fetch(`${backendURL}/api/recipes`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+
+      const receivedData = await response.json();
+      console.log(receivedData.recipes);
+      setUserRecipes(receivedData.recipes);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
+    fetchUserRecipes();
     fetchRecentRecipes();
   }, []);
 
@@ -40,6 +62,13 @@ export default function UserRecipes() {
       </header>
 
       <h2 className=" w-full mt-4 font-bold text-sm">Your Recipes</h2>
+      <div className="overflow-x-auto w-full custom-scroll">
+        <div className="flex gap-5 w-auto py-1">
+          {userRecipes.map((recipe, index) => (
+            <RecipeCard recipe={recipe} key={index} />
+          ))}
+        </div>
+      </div>
 
       <h2 className=" w-full mt-4 font-bold text-sm">
         Recently Visited Recipes ({recentRecipes.length})

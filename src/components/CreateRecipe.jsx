@@ -3,8 +3,11 @@ import { Icon } from "@iconify/react";
 import makeAnimated from "react-select/animated";
 import Select from "react-select";
 import foodTags from "../utils/FoodTags";
+import units from "../utils/RecipeUnits";
+import { useNavigate } from "react-router-dom";
 
 export default function CreateRecipe() {
+  const backendURL = process.env.REACT_APP_BACKEND_URL;
   const inputFieldRef = useRef(null);
   const animatedComponents = makeAnimated();
 
@@ -20,29 +23,7 @@ export default function CreateRecipe() {
       unit: "",
     },
   ]);
-
-  const units = [
-    "units",
-    "ml",
-    "l",
-    "tsp",
-    "tbsp",
-    "cup",
-    "pt",
-    "qt",
-    "gal",
-    "pcs",
-    "slices",
-    "leaves",
-    "pinch",
-    "bowl",
-    "glass",
-    "mug",
-    "scoop",
-    "ladle",
-    "drop",
-    "packet",
-  ];
+  const navigate = useNavigate();
 
   const focusFileInput = () => {
     inputFieldRef.current.click();
@@ -51,6 +32,13 @@ export default function CreateRecipe() {
   const handleSelectedTags = (selectedOptions) => {
     setSelectedTags(selectedOptions);
   };
+  const handleRecipeNameChange = (e) => {
+    setRecipeName(e.target.value);
+  };
+  const handlePreparationTimeChange = (e) => {
+    setPreparationTime(e.target.value);
+  };
+
   const addStep = () => {
     setSteps((prev) => [...prev, ""]);
   };
@@ -88,14 +76,65 @@ export default function CreateRecipe() {
   const updateIngredientName = (index, value) => {
     const newIngredients = [...ingredients];
     newIngredients[index].name = value;
+    setIngredients(newIngredients);
   };
   const updateIngredientQty = (index, value) => {
     const newIngredients = [...ingredients];
     newIngredients[index].qty = value;
+    setIngredients(newIngredients);
   };
   const updateIngredientUnit = (index, value) => {
     const newIngredients = [...ingredients];
     newIngredients[index].unit = value;
+    setIngredients(newIngredients);
+  };
+
+  const handleCreateRecipe = async (e) => {
+    e.preventDefault();
+    const url = `${backendURL}/api/recipes`;
+    const authToken = localStorage.getItem("authToken");
+
+    const tags = selectedTags.map((selectedTag) => selectedTag.value);
+    const sendData = {
+      recipe: {
+        name: recipeName,
+        ingredients,
+        steps,
+        is_veg: isVeg,
+        tags,
+        preperation_time: preparationTime,
+      },
+    };
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify(sendData),
+      });
+
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+      const data = await response.json();
+
+      setRecipeName("");
+      setIngredients([
+        {
+          name: "",
+          qty: "",
+          unit: "",
+        },
+      ]);
+      setIsVeg(true);
+      setSteps([""]);
+      setSelectedTags([]);
+      navigate("/dashboard/user-recipes");
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -109,7 +148,10 @@ export default function CreateRecipe() {
           />
         </button>
       </div>
-      <form className="w-full sm:w-[30rem] bg-white p-4 rounded-t-xl sm:shadow-md overflow-y-auto">
+      <form
+        className="w-full sm:w-[30rem] bg-white p-4 rounded-t-2xl sm:shadow-md overflow-y-auto"
+        onSubmit={handleCreateRecipe}
+      >
         <h1 className="text-3xl font-semibold text-center text-[#030219] mb-3">
           Create a New Recipe
         </h1>
@@ -122,6 +164,8 @@ export default function CreateRecipe() {
             placeholder="Enter recipe name"
             className="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none"
             required
+            onChange={handleRecipeNameChange}
+            value={recipeName}
           />
         </div>
         <div className="my-4 flex items-center gap-2">
@@ -131,6 +175,8 @@ export default function CreateRecipe() {
           <input
             required
             className="size-12 px-1 text-center py-2 border border-gray-300 rounded-lg outline-none"
+            value={preparationTime}
+            onChange={handlePreparationTimeChange}
           />
           <span className="text-gray-600 font-semibold text-xs justify-self-end">
             (mins)
