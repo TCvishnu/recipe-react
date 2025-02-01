@@ -19,7 +19,7 @@ export default function CreateRecipe() {
   const [ingredients, setIngredients] = useState([
     {
       name: "",
-      qty: "",
+      quantity: "",
       unit: "",
     },
   ]);
@@ -44,7 +44,7 @@ export default function CreateRecipe() {
   };
 
   const addIngredient = () => {
-    setIngredients((prev) => [...prev, { name: "", qty: "", unit: "" }]);
+    setIngredients((prev) => [...prev, { name: "", quantity: "", unit: "" }]);
   };
 
   const deleteStep = (index) => {
@@ -80,7 +80,7 @@ export default function CreateRecipe() {
   };
   const updateIngredientQty = (index, value) => {
     const newIngredients = [...ingredients];
-    newIngredients[index].qty = value;
+    newIngredients[index].quantity = value;
     setIngredients(newIngredients);
   };
   const updateIngredientUnit = (index, value) => {
@@ -124,7 +124,7 @@ export default function CreateRecipe() {
       setIngredients([
         {
           name: "",
-          qty: "",
+          quantity: "",
           unit: "",
         },
       ]);
@@ -232,6 +232,7 @@ export default function CreateRecipe() {
               <input
                 className="w-full px-1 py-2 border-b border-gray-300 outline-none"
                 value={step}
+                required
                 onChange={(e) => updateStep(index, e.target.value)}
               />
               <div className="h-full flex flex-col items-center justify-center">
@@ -276,12 +277,13 @@ export default function CreateRecipe() {
             >
               <span>{index + 1}.</span>
               <input
+                required
                 className="w-32 px-1 py-2 border-b border-gray-300 outline-none"
                 value={ingredient.name}
                 onChange={(e) => updateIngredientName(index, e.target.value)}
               />
               <input
-                value={ingredient.qty}
+                value={ingredient.quantity}
                 onChange={(e) => updateIngredientQty(index, e.target.value)}
                 required
                 className="size-8 text-xs font-medium px-1 text-center py-2 border border-gray-300 rounded-lg outline-none"

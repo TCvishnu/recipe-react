@@ -1,24 +1,35 @@
-import React from "react";
+import React, { useState } from "react";
 import { Icon } from "@iconify/react";
 import { Link } from "react-router-dom";
 
-export default function RecipeCard({ recipe }) {
+export default function RecipeCard({ recipe, isOwner, openModal }) {
+  const [recipeOwner, setRecipeOwner] = useState(!!isOwner);
+
+  const handleDeleteClick = () => {
+    openModal(recipe.id, recipe.name);
+  };
+
   return (
-    <Link
-      className="min-w-40 sm:min-w-48 recipe-shadow bg-white h-auto pb-2 rounded-t-md flex flex-col gap-2"
-      to={`/recipe/${recipe.id}`}
-    >
+    <div className="min-w-40 sm:min-w-48 recipe-shadow bg-white h-auto pb-2 rounded-t-md flex flex-col gap-2 relative">
+      {recipeOwner && (
+        <button className="absolute szie-6" onClick={handleDeleteClick}>
+          <Icon icon="material-symbols:delete" className="size-6" />
+        </button>
+      )}
       <img
         src="/foodDp.png"
         alt="Food"
         className="w-full h-24 sm:h-28 rounded-t-lg"
       />
-      <h2 className="font-bold text-center text-xs line-clamp-1">
+      <Link
+        className="font-bold text-center text-xs line-clamp-1"
+        to={`/recipe/${recipe.id}`}
+      >
         {recipe.name}
-      </h2>
+      </Link>
       <p className=" text-center text-xxs font-medium text-[#6F6F6F]">
         {recipe.steps_count}
-        steps | {recipe.preperation_time} mins
+        steps | {recipe.preparation_time} mins
       </p>
       <div className="w-full flex justify-between px-2">
         <p
@@ -38,6 +49,6 @@ export default function RecipeCard({ recipe }) {
           />
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
