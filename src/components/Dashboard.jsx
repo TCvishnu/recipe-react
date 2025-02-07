@@ -148,20 +148,10 @@ export default function Dashboard() {
 
       <h2 className=" w-full mt-4 font-bold text-sm">What's popular?</h2>
 
-      <div className="overflow-x-auto w-full custom-scroll">
-        <div className="flex gap-5 w-auto py-1">
-          {recipes.slice(0, recipesPerRow).map((recipe, index) => (
-            <RecipeCard recipe={recipe} key={index} />
-          ))}
-        </div>
-      </div>
-
-      <div className="overflow-x-auto w-full custom-scroll">
-        <div className="flex gap-5 w-auto py-1">
-          {recipes.slice(recipesPerRow).map((recipe, index) => (
-            <RecipeCard recipe={recipe} key={index} />
-          ))}
-        </div>
+      <div className="w-full overflow-y-auto h-auto flex flex-wrap justify-evenly gap-4 py-4">
+        {recipes.map((recipe, index) => (
+          <RecipeCard recipe={recipe} key={index} />
+        ))}
       </div>
 
       <Link
