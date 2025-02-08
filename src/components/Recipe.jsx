@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 
 import { Icon } from "@iconify/react";
+import { Rating, Modal } from "@mui/material";
+
 import Comments from "./Comments";
 
 export default function Recipe({ userEmail }) {
@@ -11,9 +13,15 @@ export default function Recipe({ userEmail }) {
   const [recipe, setRecipe] = useState([]);
   const [displaySteps, setDisplaySteps] = useState(false);
   const [showComments, setShowComments] = useState(false);
+  const [hasRated, setHasRated] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [openRater, setOpenRater] = useState(false);
 
   const handleOpenComments = () => setShowComments(true);
   const handleCloseComments = () => setShowComments(false);
+
+  const handleOpenRater = () => setOpenRater(true);
+  const handleCloseRater = () => setOpenRater(false);
 
   const fetchRecipe = async () => {
     const authToken = localStorage.getItem("authToken");
@@ -32,6 +40,65 @@ export default function Recipe({ userEmail }) {
       const receivedData = await response.json();
       console.log(receivedData);
       setRecipe(receivedData.recipe);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const hasUserRatedTheRecipe = async () => {
+    const authToken = localStorage.getItem("authToken");
+    try {
+      const response = await fetch(
+        `${backendURL}/api/recipes/${recipeID}/ratings/has-rated`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+      const receivedData = await response.json();
+      setHasRated(receivedData.has_rated);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleRating = async () => {
+    if (!rating) {
+      return;
+    }
+    handleCloseRater();
+    try {
+      const authToken = localStorage.getItem("authToken");
+      const sendData = {
+        rating,
+      };
+      const response = await fetch(
+        `${backendURL}/api/recipes/${recipeID}/ratings`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify(sendData),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+
+      const receivedData = await response.json();
+      console.log(receivedData);
+      setRecipe((prev) => ({ ...prev, rating: receivedData.new_rating }));
+      setRating(0);
+      setHasRated(true);
     } catch (error) {
       console.error(error);
     }
@@ -69,6 +136,7 @@ export default function Recipe({ userEmail }) {
   useEffect(() => {
     addToRecentRecipes();
     fetchRecipe();
+    hasUserRatedTheRecipe();
   }, []);
   return (
     <div className="w-full flex flex-col">
@@ -89,13 +157,17 @@ export default function Recipe({ userEmail }) {
               </span>
             </div>
 
-            <div className="flex gap-1 items-center">
+            <button
+              className="flex gap-1 items-center"
+              disabled={hasRated === true}
+              onClick={handleOpenRater}
+            >
               <Icon
                 icon="solar:star-bold-duotone"
                 className=" text-[#F5BA20] size-6"
               />
               <span className=" text-sm font-semibold ">{recipe.rating}</span>
-            </div>
+            </button>
 
             <div className="flex gap-1 items-center">
               {recipe.is_veg ? (
@@ -174,6 +246,36 @@ export default function Recipe({ userEmail }) {
       {showComments && (
         <Comments onClose={handleCloseComments} email={userEmail} />
       )}
+
+      <Modal
+        open={openRater}
+        onClose={handleCloseRater}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white flex flex-col items-center py-4 w-8/12 gap-2 rounded-sm">
+          <h2 className=" text-gray-600 font-bold text-xl">Give Feedback</h2>
+          <p className=" text-gray-400 font-medium">
+            How did you like our recipe?
+          </p>
+          <Rating
+            max={5}
+            value={rating}
+            onChange={(_, newValue) => setRating(newValue)}
+          />
+          <div className="w-full flex gap-4 justify-center items-center mt-4">
+            <button className="border border-gray-300 py-1 px-3 rounded-lg font-semibold text-sm">
+              Cancel
+            </button>
+            <button
+              className="py-1 px-3 rounded-lg font-semibold text-sm bg-[#F5BA20] text-white"
+              onClick={handleRating}
+            >
+              Submit
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
