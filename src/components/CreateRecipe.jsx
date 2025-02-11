@@ -138,7 +138,7 @@ export default function CreateRecipe() {
   };
 
   return (
-    <div className="w-screen h-screen flex flex-col md:flex-row items-center justify-start overflow-y-auto bg-[#f0f0f0]">
+    <div className="w-screen h-screen flex flex-col items-center justify-start overflow-y-auto bg-[#f0f0f0]">
       <div className="w-full md:w-1/2 min-h-60  flex items-center justify-center">
         <input type="file" className="hidden" ref={inputFieldRef} />
         <button onClick={focusFileInput}>
@@ -149,7 +149,7 @@ export default function CreateRecipe() {
         </button>
       </div>
       <form
-        className="w-full sm:w-[30rem] bg-white p-4 rounded-t-2xl sm:shadow-md overflow-y-auto"
+        className="w-full bg-white p-4 sm:px-8 md:px-20 lg:px-32 rounded-t-2xl sm:shadow-md overflow-y-auto"
         onSubmit={handleCreateRecipe}
       >
         <h1 className="text-3xl font-semibold text-center text-[#030219] mb-3">
