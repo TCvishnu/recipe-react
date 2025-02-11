@@ -10,7 +10,7 @@ export default function Recipe({ userEmail }) {
   const backendURL = process.env.REACT_APP_BACKEND_URL;
   const { recipeID } = useParams();
 
-  const [recipe, setRecipe] = useState([]);
+  const [recipe, setRecipe] = useState({});
   const [displaySteps, setDisplaySteps] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [hasRated, setHasRated] = useState(false);
@@ -38,7 +38,6 @@ export default function Recipe({ userEmail }) {
       }
 
       const receivedData = await response.json();
-      console.log(receivedData);
       setRecipe(receivedData.recipe);
     } catch (error) {
       console.error(error);
@@ -193,6 +192,18 @@ export default function Recipe({ userEmail }) {
               />
             </button>
           </div>
+          {recipe.tags && (
+            <div className="flex gap-2 mt-2">
+              {recipe.tags.map((tag, index) => (
+                <span
+                  key={index}
+                  className=" text-xs font-semibold border border-gray-500 p-1 rounded-lg"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

@@ -3,6 +3,7 @@ import RecipeCard from "./RecipeCard";
 import { Link } from "react-router-dom";
 import Modal from "@mui/material/Modal";
 import { Icon } from "@iconify/react";
+import Logo from "./Logo";
 
 export default function UserRecipes() {
   const backendURL = process.env.REACT_APP_BACKEND_URL;
@@ -95,7 +96,7 @@ export default function UserRecipes() {
   return (
     <div className="w-screen p-2 flex flex-col gap-3 items-center">
       <header className="w-full flex justify-between items-end">
-        <h1 className=" font-righteous text-3xl self-end">Recipyaa.!</h1>
+        <Logo />
       </header>
 
       <h2 className=" w-full mt-4 font-bold text-sm">Your Recipes</h2>
