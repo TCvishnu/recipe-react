@@ -16,6 +16,7 @@ export default function Recipe({ userEmail }) {
   const [hasRated, setHasRated] = useState(false);
   const [rating, setRating] = useState(0);
   const [openRater, setOpenRater] = useState(false);
+  const [foundRecipe, setFoundRecipe] = useState(true);
 
   const handleOpenComments = () => setShowComments(true);
   const handleCloseComments = () => setShowComments(false);
@@ -36,11 +37,15 @@ export default function Recipe({ userEmail }) {
       if (!response.ok) {
         throw new Error(response.statusText);
       }
+      if (response.status === 200) {
+        addToRecentRecipes();
+      }
 
       const receivedData = await response.json();
       setRecipe(receivedData.recipe);
     } catch (error) {
       console.error(error);
+      setFoundRecipe(false);
     }
   };
 
@@ -94,7 +99,6 @@ export default function Recipe({ userEmail }) {
       }
 
       const receivedData = await response.json();
-      console.log(receivedData);
       setRecipe((prev) => ({ ...prev, rating: receivedData.new_rating }));
       setRating(0);
       setHasRated(true);
@@ -133,98 +137,104 @@ export default function Recipe({ userEmail }) {
   };
 
   useEffect(() => {
-    addToRecentRecipes();
     fetchRecipe();
     hasUserRatedTheRecipe();
   }, []);
   return (
     <div className="w-full flex flex-col">
-      <div
-        className="w-full h-80 bg-cover bg-center flex flex-col justify-end"
-        style={{ backgroundImage: 'url("/foodDp.png")' }}
-      >
-        <div className="flex h-auto bg-gradient-to-t from-white via-gray-100 via-50% to-gray-50/50 px-2 py-2 flex-col gap-3 rounded-t-lg">
-          <h1 className=" text-xl font-righteous">{recipe.name}</h1>
-          <div className="flex text-gray-700 gap-6">
-            <div className="flex gap-1 items-center">
-              <Icon
-                icon="lets-icons:clock-fill"
-                className="text-[#2eb800] size-6"
-              />
-              <span className=" text-sm font-semibold ">
-                {recipe.preperation_time} mins
-              </span>
-            </div>
-
-            <button
-              className="flex gap-1 items-center"
-              disabled={hasRated === true}
-              onClick={handleOpenRater}
-            >
-              <Icon
-                icon="solar:star-bold-duotone"
-                className=" text-[#F5BA20] size-6"
-              />
-              <span className=" text-sm font-semibold ">{recipe.rating}</span>
-            </button>
-
-            <div className="flex gap-1 items-center">
-              {recipe.is_veg ? (
+      {foundRecipe && (
+        <div
+          className="w-full h-80 bg-cover bg-center flex flex-col justify-end"
+          style={{ backgroundImage: 'url("/foodDp.png")' }}
+        >
+          <div className="flex h-auto bg-gradient-to-t from-white via-gray-100 via-50% to-gray-50/50 px-2 py-2 flex-col gap-3 rounded-t-lg">
+            <h1 className=" text-xl font-righteous">{recipe.name}</h1>
+            <div className="flex text-gray-700 gap-6">
+              <div className="flex gap-1 items-center">
                 <Icon
-                  icon="game-icons:cabbage"
+                  icon="lets-icons:clock-fill"
                   className="text-[#2eb800] size-6"
                 />
-              ) : (
-                <Icon
-                  icon="tdesign:chicken"
-                  className="size-6 text-[#FD7B8B]"
-                />
-              )}
-              <span className=" text-sm font-semibold ">
-                {recipe.is_veg ? "Veggie" : "Non-veggie"}
-              </span>
-            </div>
-
-            <button className=" flex items-center" onClick={handleOpenComments}>
-              <Icon
-                icon="material-symbols:comment-outline-rounded"
-                className=" text-[#F5BA20] size-6"
-              />
-            </button>
-          </div>
-          {recipe.tags && (
-            <div className="flex gap-2 mt-2">
-              {recipe.tags.map((tag, index) => (
-                <span
-                  key={index}
-                  className=" text-xs font-semibold border border-gray-500 p-1 rounded-lg"
-                >
-                  {tag}
+                <span className=" text-sm font-semibold ">
+                  {recipe.preperation_time} mins
                 </span>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+              </div>
 
-      <div className="mt-10 font-righteous flex justify-evenly items-center">
-        <button
-          onClick={showIngredients}
-          className={`w-40 h-10 rounded-md ${
-            displaySteps ? "" : " bg-[#2eb800] text-white"
-          }`}
-        >
-          Ingredients{" "}
-        </button>
-        <button
-          onClick={showSteps}
-          className={`w-40 h-10 rounded-md ${
-            displaySteps ? "bg-[#2eb800] text-white" : " "
-          }`}
-        >
-          Steps{" "}
-        </button>
-      </div>
+              <button
+                className="flex gap-1 items-center"
+                disabled={hasRated === true}
+                onClick={handleOpenRater}
+              >
+                <Icon
+                  icon="solar:star-bold-duotone"
+                  className=" text-[#F5BA20] size-6"
+                />
+                <span className=" text-sm font-semibold ">{recipe.rating}</span>
+              </button>
+
+              <div className="flex gap-1 items-center">
+                {recipe.is_veg ? (
+                  <Icon
+                    icon="game-icons:cabbage"
+                    className="text-[#2eb800] size-6"
+                  />
+                ) : (
+                  <Icon
+                    icon="tdesign:chicken"
+                    className="size-6 text-[#FD7B8B]"
+                  />
+                )}
+                <span className=" text-sm font-semibold ">
+                  {recipe.is_veg ? "Veggie" : "Non-veggie"}
+                </span>
+              </div>
+
+              <button
+                className=" flex items-center"
+                onClick={handleOpenComments}
+              >
+                <Icon
+                  icon="material-symbols:comment-outline-rounded"
+                  className=" text-[#F5BA20] size-6"
+                />
+              </button>
+            </div>
+            {recipe.tags && (
+              <div className="flex gap-2 mt-2">
+                {recipe.tags.map((tag, index) => (
+                  <span
+                    key={index}
+                    className=" text-xs font-semibold border border-gray-500 p-1 rounded-lg"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {foundRecipe && (
+        <div className="mt-10 font-righteous flex justify-evenly items-center">
+          <button
+            onClick={showIngredients}
+            className={`w-40 h-10 rounded-md ${
+              displaySteps ? "" : " bg-[#2eb800] text-white"
+            }`}
+          >
+            Ingredients{" "}
+          </button>
+          <button
+            onClick={showSteps}
+            className={`w-40 h-10 rounded-md ${
+              displaySteps ? "bg-[#2eb800] text-white" : " "
+            }`}
+          >
+            Steps{" "}
+          </button>
+        </div>
+      )}
 
       {recipe.ingredients && !displaySteps && (
         <ul className="w-full px-4 flex flex-col gap-4 my-4 text-gray-700 ">
@@ -287,6 +297,14 @@ export default function Recipe({ userEmail }) {
           </div>
         </div>
       </Modal>
+
+      {!foundRecipe && (
+        <div className="flex justify-center h-screen items-center">
+          <span className="text-xl font-semibold">
+            Oops!! Looks like no such recipe exists
+          </span>
+        </div>
+      )}
     </div>
   );
 }
