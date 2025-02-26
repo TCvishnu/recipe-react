@@ -8,7 +8,6 @@ export default function AvoidAuth({ children }) {
 
   const checkAuth = async () => {
     const authToken = localStorage.getItem("authToken");
-
     if (!authToken) {
       setIsAuthenticated(false);
       return;

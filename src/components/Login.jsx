@@ -50,7 +50,7 @@ export default function Login() {
       });
 
       if (!response.ok) {
-        throw new Error(response.text);
+        throw new Error(response.statusText);
       }
 
       const receivedData = await response.json();

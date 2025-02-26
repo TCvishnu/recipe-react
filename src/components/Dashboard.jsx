@@ -72,13 +72,14 @@ export default function Dashboard() {
   const searchByTags = async (selectedOptions) => {
     const authToken = localStorage.getItem("authToken");
 
-    const tags = selectedOptions.map((selectedTag) => selectedTag.value);
+    const urlParams = new URLSearchParams();
+    selectedOptions
+      .map((selectedTag) => selectedTag.value)
+      .forEach((tag) => urlParams.append("tag[]", tag));
 
     try {
       const response = await fetch(
-        `${backendURL}/api/recipes?tags=${encodeURIComponent(
-          JSON.stringify(tags)
-        )}`,
+        `${backendURL}/api/recipes?${urlParams.toString()}`,
         {
           method: "GET",
           headers: {
@@ -263,7 +264,7 @@ export default function Dashboard() {
 
       <h2 className=" w-full mt-4 font-bold text-sm">What's popular?</h2>
 
-      <div className="w-full overflow-y-auto h-auto flex flex-wrap justify-evenly sm:justify-start gap-4 py-4">
+      <div className="w-full overflow-y-auto h-auto flex flex-wrap justify-evenly gap-4 py-4">
         {recipes.map((recipe, index) => (
           <RecipeCard recipe={recipe} key={index} />
         ))}
