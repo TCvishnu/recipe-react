@@ -16,6 +16,8 @@ export default function CreateRecipe() {
   const [preparationTime, setPreparationTime] = useState(0);
   const [isVeg, setIsVeg] = useState(true);
   const [steps, setSteps] = useState([""]);
+  const [image, setImage] = useState("");
+  const [sendImage, setSendImage] = useState(null);
   const [ingredients, setIngredients] = useState([
     {
       name: "",
@@ -95,30 +97,48 @@ export default function CreateRecipe() {
     const authToken = localStorage.getItem("authToken");
 
     const tags = selectedTags.map((selectedTag) => selectedTag.value);
-    const sendData = {
-      recipe: {
-        name: recipeName,
-        ingredients,
-        steps,
-        is_veg: isVeg,
-        tags,
-        preperation_time: preparationTime,
-      },
+
+    const formData = new FormData();
+    let sendData;
+    let headers = {
+      Authorization: `Bearer ${authToken}`,
     };
+    if (sendImage) {
+      formData.append("image", sendImage);
+      formData.append("name", recipeName);
+      formData.append("ingredients", JSON.stringify(ingredients));
+      formData.append("steps", JSON.stringify(steps));
+      formData.append("is_veg", isVeg);
+      formData.append("tags", JSON.stringify(tags));
+      formData.append("preperation_time", preparationTime);
+      sendData = formData;
+    } else {
+      sendData = {
+        recipe: {
+          name: recipeName,
+          ingredients,
+          steps,
+          is_veg: isVeg,
+          tags,
+          preperation_time: preparationTime,
+        },
+      };
+      sendData = JSON.stringify(sendData);
+      headers["Content-Type"] = "application/json";
+    }
+
     try {
       const response = await fetch(url, {
         method: "POST",
-        headers: {
-          "Content-type": "application/json",
-          Authorization: `Bearer ${authToken}`,
-        },
-        body: JSON.stringify(sendData),
+        headers,
+        body: sendData,
       });
 
       if (!response.ok) {
+        const data = await response.json();
+        console.log(data);
         throw new Error(response.statusText);
       }
-      const data = await response.json();
 
       setRecipeName("");
       setIngredients([
@@ -137,16 +157,36 @@ export default function CreateRecipe() {
     }
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSendImage(file);
+      setImage(URL.createObjectURL(file));
+    }
+  };
+
   return (
     <div className="w-screen h-screen flex flex-col items-center justify-start overflow-y-auto bg-[#f0f0f0]">
       <div className="w-full md:w-1/2 min-h-60  flex items-center justify-center">
-        <input type="file" className="hidden" ref={inputFieldRef} />
-        <button onClick={focusFileInput}>
-          <Icon
-            icon="hugeicons:image-upload"
-            className="text-[#030219] size-14"
-          />
-        </button>
+        <input
+          type="file"
+          accept="image/*"
+          className="hidden"
+          ref={inputFieldRef}
+          onChange={handleImageChange}
+        />
+        {!image ? (
+          <button onClick={focusFileInput}>
+            <Icon
+              icon="hugeicons:image-upload"
+              className="text-[#030219] size-14"
+            />
+          </button>
+        ) : (
+          <button onClick={focusFileInput}>
+            <img src={image} alt="recipe" />
+          </button>
+        )}
       </div>
       <form
         className="w-full bg-white p-4 sm:px-8 md:px-20 lg:px-32 rounded-t-2xl sm:shadow-md overflow-y-auto"

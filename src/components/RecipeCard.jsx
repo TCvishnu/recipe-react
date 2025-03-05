@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Icon } from "@iconify/react";
 import { Link } from "react-router-dom";
+import { getImageURL } from "../utils/image";
 
 export default function RecipeCard({ recipe, isOwner, openModal }) {
   const [recipeOwner, setRecipeOwner] = useState(!!isOwner);
@@ -20,7 +21,7 @@ export default function RecipeCard({ recipe, isOwner, openModal }) {
         </button>
       )}
       <img
-        src="/foodDp.png"
+        src={recipe.image ? `${getImageURL(recipe.image)}` : "/foodDp.png"}
         alt="Food"
         className="w-full h-24 sm:h-28 rounded-t-lg"
       />
