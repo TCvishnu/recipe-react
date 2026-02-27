@@ -147,95 +147,129 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen w-full bg-[#fcfaf7] text-slate-900 font-sans p-6 pb-28">
       {/* Editorial Header */}
-      <header className="flex justify-between items-center pb-8 border-b border-slate-200 mb-10">
-        <Logo />
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-slate-100">
+        <div className="max-w-[1700px] mx-auto px-6 h-20 flex items-center justify-between">
+          {/* Left: Logo */}
+          <div className="flex-shrink-0">
+            <Logo />
+          </div>
 
-        {/* Unified Search Bar (Desktop) */}
-        <div className="hidden sm:flex flex-1 max-w-2xl mx-8 relative items-center gap-2">
-          {isSearchingByName ? (
-            <div className="relative w-full">
-              <Icon
-                icon="lucide:search"
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-              />
-              <input
-                onChange={handleSearch}
-                className="w-full h-12 outline-none rounded-2xl bg-slate-100 border border-slate-200 px-12 text-sm placeholder-slate-400 font-medium"
-                placeholder="Search recipes, ingredients..."
-              />
-            </div>
-          ) : (
-            <Select
-              className="w-full"
-              styles={customSelectStyles}
-              components={animatedComponents}
-              onChange={handleSelectedTags}
-              options={foodTags.map((tag) => ({ label: tag, value: tag }))}
-              isMulti
-              placeholder="Select tags..."
-            />
-          )}
-
-          <button
-            title={isSearchingByName ? "Search by tags" : "Search by name"}
-            className="flex-shrink-0 size-12 rounded-2xl flex items-center justify-center transition-all bg-slate-900 hover:bg-black"
-            onClick={() => setIsSearchingByName(!isSearchingByName)}
-          >
-            <Icon
-              icon={
+          {/* Center: Improved Unified Search Container */}
+          <div className="hidden md:flex items-center gap-0 bg-slate-50 border border-slate-200 rounded-full h-12 p-1 max-w-2xl w-full transition-all">
+            {/* Icon/Toggle inside the bar for better flow */}
+            <button
+              title={
                 isSearchingByName
-                  ? "tabler:tag-filled"
-                  : "icon-park-solid:search"
+                  ? "Switch to tag search"
+                  : "Switch to text search"
               }
-              className="text-white size-6"
-            />
+              className="flex-shrink-0 size-10 rounded-full flex items-center justify-center bg-white text-slate-500 transition-all border border-slate-100 mr-1"
+              onClick={() => setIsSearchingByName(!isSearchingByName)}
+            >
+              <Icon
+                icon={
+                  isSearchingByName
+                    ? "icon-park-solid:search"
+                    : "tabler:tag-filled"
+                }
+                className="size-5"
+              />
+            </button>
+
+            <div className="relative flex-grow h-full">
+              {isSearchingByName ? (
+                <input
+                  onChange={handleSearch}
+                  className="w-full h-full bg-transparent outline-none text-sm text-slate-900 placeholder:text-slate-400 pl-2 pr-4"
+                  placeholder="Search recipes, ingredients..."
+                />
+              ) : (
+                <Select
+                  className="w-full h-full text-sm"
+                  styles={{
+                    ...customSelectStyles,
+                    control: (base) => ({
+                      ...base,
+                      height: "100%",
+                      minHeight: "40px",
+                      borderRadius: "9999px",
+                      backgroundColor: "transparent",
+                      border: "none",
+                      boxShadow: "none",
+                      cursor: "pointer",
+                    }),
+                  }}
+                  components={animatedComponents}
+                  onChange={handleSelectedTags}
+                  options={foodTags.map((tag) => ({ label: tag, value: tag }))}
+                  isMulti
+                  placeholder="Filter by tags..."
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Right: Logout */}
+          <button
+            className="flex items-center gap-2 text-slate-600 hover:text-sky-600 font-medium text-sm transition-colors"
+            onClick={handleLogout}
+          >
+            <Icon icon="lucide:log-out" className="size-4" />
+            Logout
           </button>
         </div>
 
-        <button
-          className="bg-white border border-slate-200 hover:border-slate-300 rounded-xl text-xs font-bold uppercase tracking-wider h-11 px-6 text-slate-700"
-          onClick={handleLogout}
-        >
-          Logout
-        </button>
+        {/* Mobile View: Tighter integration */}
+        <div className="md:hidden px-4 pb-4">
+          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-2xl p-1.5">
+            <div className="flex-grow relative">
+              {isSearchingByName ? (
+                <input
+                  onChange={handleSearch}
+                  className="w-full h-10 bg-transparent outline-none px-3 text-sm text-slate-900"
+                  placeholder="Search..."
+                />
+              ) : (
+                <Select
+                  className="w-full text-sm"
+                  styles={{
+                    ...customSelectStyles,
+                    control: (base) => ({
+                      ...base,
+                      height: "40px",
+                      minHeight: "40px",
+                      borderRadius: "12px",
+                      backgroundColor: "transparent",
+                      border: "none",
+                      boxShadow: "none",
+                    }),
+                  }}
+                  components={animatedComponents}
+                  onChange={handleSelectedTags}
+                  options={foodTags.map((tag) => ({ label: tag, value: tag }))}
+                  isMulti
+                  placeholder="Tags..."
+                />
+              )}
+            </div>
+            <button
+              className="flex-shrink-0 size-10 rounded-xl flex items-center justify-center bg-slate-900 text-white"
+              onClick={() => setIsSearchingByName(!isSearchingByName)}
+            >
+              <Icon
+                icon={
+                  isSearchingByName
+                    ? "tabler:tag-filled"
+                    : "icon-park-solid:search"
+                }
+                className="size-5"
+              />
+            </button>
+          </div>
+        </div>
       </header>
 
-      {/* Unified Search Bar (Mobile) */}
-      <div className="sm:hidden mb-8 relative flex items-center gap-2">
-        {isSearchingByName ? (
-          <input
-            onChange={handleSearch}
-            className="w-full h-11 outline-none rounded-2xl bg-slate-100 border border-slate-200 px-6 text-sm placeholder-slate-400 font-medium"
-            placeholder="Search..."
-          />
-        ) : (
-          <Select
-            className="w-full"
-            styles={{
-              ...customSelectStyles,
-              control: (base) => ({ ...base, height: "44px" }),
-            }}
-            components={animatedComponents}
-            onChange={handleSelectedTags}
-            options={foodTags.map((tag) => ({ label: tag, value: tag }))}
-            isMulti
-            placeholder="Tags..."
-          />
-        )}
-        <button
-          className="flex-shrink-0 size-11 rounded-2xl flex items-center justify-center transition-all bg-slate-900"
-          onClick={() => setIsSearchingByName(!isSearchingByName)}
-        >
-          <Icon
-            icon={
-              isSearchingByName ? "tabler:tag-filled" : "icon-park-solid:search"
-            }
-            className="text-white size-5"
-          />
-        </button>
-      </div>
-
-      <div className="flex items-end justify-between mb-8">
+      <div className="flex items-end justify-between mb-8 mt-4">
         <h2 className="font-serif text-3xl font-medium text-slate-900 italic">
           Trending Plates
         </h2>
