@@ -1,45 +1,34 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Icon } from "@iconify/react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import RecipeCard from "./RecipeCard";
-import { Link } from "react-router-dom";
 import Logo from "./Logo";
 import makeAnimated from "react-select/animated";
 import Select from "react-select";
 import foodTags from "../utils/FoodTags";
 
 export default function Dashboard() {
-  let debounceTimeout;
-
   const animatedComponents = makeAnimated();
-
   const backendURL = process.env.REACT_APP_BACKEND_URL;
+  const navigate = useNavigate();
+
+  // Refs to handle debounce correctly
+  const debounceTimeoutRef = useRef(null);
 
   const [recipePage, setRecipePage] = useState(1);
   const [recipes, setRecipes] = useState([]);
   const [isSearchingByName, setIsSearchingByName] = useState(true);
   const [selectedTags, setSelectedTags] = useState([]);
-  const navigate = useNavigate();
 
-  const setSearchByName = () => {
-    setIsSearchingByName(true);
-  };
-
+  // --- EXISTING FUNCTIONS (Kept as is) ---
   const handleLogout = async () => {
     const authToken = localStorage.getItem("authToken");
-
     try {
       const response = await fetch(`${backendURL}/api/logout`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        },
+        headers: { Authorization: `Bearer ${authToken}` },
       });
-
-      if (!response.ok) {
-        throw new Error(response.statusText);
-      }
-
+      if (!response.ok) throw new Error(response.statusText);
       localStorage.removeItem("authToken");
       navigate("/login");
     } catch (error) {
@@ -49,10 +38,8 @@ export default function Dashboard() {
 
   const handleSearch = (e) => {
     const searchTerm = e.target.value.trim();
-
-    clearTimeout(debounceTimeout);
-
-    debounceTimeout = setTimeout(() => {
+    if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+    debounceTimeoutRef.current = setTimeout(() => {
       if (!searchTerm) {
         fetchRecipes();
         return;
@@ -62,7 +49,7 @@ export default function Dashboard() {
   };
 
   const handleSelectedTags = (selectedOptions) => {
-    if (selectedOptions.length > 0) {
+    if (selectedOptions && selectedOptions.length > 0) {
       searchByTags(selectedOptions);
     } else {
       fetchRecipes();
@@ -71,12 +58,10 @@ export default function Dashboard() {
 
   const searchByTags = async (selectedOptions) => {
     const authToken = localStorage.getItem("authToken");
-
     const urlParams = new URLSearchParams();
     selectedOptions
       .map((selectedTag) => selectedTag.value)
       .forEach((tag) => urlParams.append("tag[]", tag));
-
     try {
       const response = await fetch(
         `${backendURL}/api/recipes?${urlParams.toString()}`,
@@ -86,13 +71,9 @@ export default function Dashboard() {
             "Content-type": "application/json",
             Authorization: `Bearer ${authToken}`,
           },
-        }
+        },
       );
-
-      if (!response.ok) {
-        throw new Error(response.statusText);
-      }
-
+      if (!response.ok) throw new Error(response.statusText);
       const receivedData = await response.json();
       setRecipes(receivedData.recipes);
     } catch (error) {
@@ -110,11 +91,7 @@ export default function Dashboard() {
           Authorization: `Bearer ${authToken}`,
         },
       });
-
-      if (!response.ok) {
-        throw new Error(response.statusText);
-      }
-
+      if (!response.ok) throw new Error(response.statusText);
       const receivedData = await response.json();
       setRecipes(receivedData.recipes);
     } catch (error) {
@@ -124,7 +101,6 @@ export default function Dashboard() {
 
   const fetchRecipes = async () => {
     const authToken = localStorage.getItem("authToken");
-
     try {
       const response = await fetch(
         `${backendURL}/api/recipes?page=${recipePage}&size=20`,
@@ -134,12 +110,9 @@ export default function Dashboard() {
             "Content-type": "application/json",
             Authorization: `Bearer ${authToken}`,
           },
-        }
+        },
       );
-      if (!response.ok) {
-        throw new Error(response.statusText);
-      }
-
+      if (!response.ok) throw new Error(response.statusText);
       const receivedData = await response.json();
       setRecipes(receivedData.recipes);
     } catch (error) {
@@ -150,131 +123,146 @@ export default function Dashboard() {
   useEffect(() => {
     fetchRecipes();
   }, []);
+  // ----------------------------------------
+
+  // --- NEW UI STYLING FOR REACT-SELECT ---
+  const customSelectStyles = {
+    control: (base) => ({
+      ...base,
+      borderRadius: "1rem",
+      backgroundColor: "#f1f5f9",
+      border: "1px solid #e2e8f0",
+      height: "48px",
+      boxShadow: "none",
+      "&:hover": { borderColor: "#cbd5e1" },
+    }),
+    multiValue: (base) => ({
+      ...base,
+      backgroundColor: "#0f172a",
+      borderRadius: "6px",
+    }),
+    multiValueLabel: (base) => ({ ...base, color: "white" }),
+  };
 
   return (
-    <div className=" w-screen h-auto p-2 flex flex-col gap-3 items-center bg-white">
-      <header className="w-full flex justify-between items-center">
+    <div className="min-h-screen w-full bg-[#fcfaf7] text-slate-900 font-sans p-6 pb-28">
+      {/* Editorial Header */}
+      <header className="flex justify-between items-center pb-8 border-b border-slate-200 mb-10">
         <Logo />
-        <div className="hidden sm:flex sm:w-7/12 md:w-8/12 lg:w-7/12 relative h-12">
-          {isSearchingByName && (
-            <input
-              onChange={handleSearch}
-              className="h-12 outline-none rounded-full bg-gray-100 px-6 text-xs w-full placeholder-gray-700 font-medium"
-              placeholder="What are you looking for?"
-            />
-          )}
 
-          {isSearchingByName && (
-            <button
-              title="search by tags"
-              className=" bg-[#33cccc] size-9 rounded-full flex items-center justify-center absolute top-1/2 -translate-y-1/2 right-3"
-              onClick={() => setIsSearchingByName(false)}
-            >
-              <Icon icon="tabler:tag-filled" className=" text-white size-6" />
-            </button>
-          )}
-
-          {!isSearchingByName && (
+        {/* Unified Search Bar (Desktop) */}
+        <div className="hidden sm:flex flex-1 max-w-2xl mx-8 relative items-center gap-2">
+          {isSearchingByName ? (
+            <div className="relative w-full">
+              <Icon
+                icon="lucide:search"
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+              />
+              <input
+                onChange={handleSearch}
+                className="w-full h-12 outline-none rounded-2xl bg-slate-100 border border-slate-200 px-12 text-sm placeholder-slate-400 font-medium"
+                placeholder="Search recipes, ingredients..."
+              />
+            </div>
+          ) : (
             <Select
-              className="h-12 w-10/12"
-              styles={{
-                control: (base) => ({
-                  ...base,
-                  borderRadius: "12px",
-                  minWidth: "200px",
-                  height: "48px",
-                }),
-              }}
+              className="w-full"
+              styles={customSelectStyles}
               components={animatedComponents}
               onChange={handleSelectedTags}
               options={foodTags.map((tag) => ({ label: tag, value: tag }))}
               isMulti
+              placeholder="Select tags..."
             />
           )}
-          {!isSearchingByName && (
-            <button
-              className=" bg-[#33cccc] size-9 rounded-full flex items-center justify-center absolute top-1/2 -translate-y-1/2 right-3"
-              onClick={setSearchByName}
-            >
-              <Icon
-                icon="icon-park-solid:search"
-                className=" text-white size-6"
-              />
-            </button>
-          )}
+
+          <button
+            title={isSearchingByName ? "Search by tags" : "Search by name"}
+            className="flex-shrink-0 size-12 rounded-2xl flex items-center justify-center transition-all bg-slate-900 hover:bg-black"
+            onClick={() => setIsSearchingByName(!isSearchingByName)}
+          >
+            <Icon
+              icon={
+                isSearchingByName
+                  ? "tabler:tag-filled"
+                  : "icon-park-solid:search"
+              }
+              className="text-white size-6"
+            />
+          </button>
         </div>
+
         <button
-          className="bg-[#030219] rounded-xl text-xs font-medium h-8 w-20 text-white"
+          className="bg-white border border-slate-200 hover:border-slate-300 rounded-xl text-xs font-bold uppercase tracking-wider h-11 px-6 text-slate-700"
           onClick={handleLogout}
         >
           Logout
         </button>
       </header>
 
-      {/* mobile */}
-      <div
-        className={` w-full flex ${
-          isSearchingByName ? "justify-center" : "justify-start"
-        } sm:hidden relative mt-2`}
-      >
-        {isSearchingByName && (
+      {/* Unified Search Bar (Mobile) */}
+      <div className="sm:hidden mb-8 relative flex items-center gap-2">
+        {isSearchingByName ? (
           <input
             onChange={handleSearch}
-            className=" outline-none w-full h-10 rounded-full bg-gray-100 px-6 text-xs placeholder-gray-700 font-medium"
-            placeholder="What are you looking for?"
+            className="w-full h-11 outline-none rounded-2xl bg-slate-100 border border-slate-200 px-6 text-sm placeholder-slate-400 font-medium"
+            placeholder="Search..."
           />
-        )}
-        {isSearchingByName && (
-          <button
-            className=" bg-[#33cccc] size-8 rounded-full flex items-center justify-center absolute top-1/2 -translate-y-1/2 right-2"
-            onClick={() => setIsSearchingByName(false)}
-          >
-            <Icon icon="tabler:tag-filled" className=" text-white size-6" />
-          </button>
-        )}
-        {!isSearchingByName && (
+        ) : (
           <Select
-            className=" w-10/12"
+            className="w-full"
             styles={{
-              control: (base) => ({
-                ...base,
-                borderRadius: "12px",
-                minWidth: "200px",
-                height: "40px",
-              }),
+              ...customSelectStyles,
+              control: (base) => ({ ...base, height: "44px" }),
             }}
             components={animatedComponents}
             onChange={handleSelectedTags}
             options={foodTags.map((tag) => ({ label: tag, value: tag }))}
             isMulti
+            placeholder="Tags..."
           />
         )}
-        {!isSearchingByName && (
-          <button
-            className=" bg-[#33cccc] size-9 rounded-full flex items-center justify-center absolute top-1/2 -translate-y-1/2 right-0"
-            onClick={setSearchByName}
-          >
-            <Icon
-              icon="icon-park-solid:search"
-              className=" text-white size-6"
-            />
-          </button>
-        )}
+        <button
+          className="flex-shrink-0 size-11 rounded-2xl flex items-center justify-center transition-all bg-slate-900"
+          onClick={() => setIsSearchingByName(!isSearchingByName)}
+        >
+          <Icon
+            icon={
+              isSearchingByName ? "tabler:tag-filled" : "icon-park-solid:search"
+            }
+            className="text-white size-5"
+          />
+        </button>
       </div>
 
-      <h2 className=" w-full mt-4 font-bold text-sm">What's popular?</h2>
+      <div className="flex items-end justify-between mb-8">
+        <h2 className="font-serif text-3xl font-medium text-slate-900 italic">
+          Trending Plates
+        </h2>
+        <span className="text-xs font-bold uppercase tracking-widest text-slate-400">
+          {recipes.length} Results
+        </span>
+      </div>
 
-      <div className="w-full overflow-y-auto h-auto flex flex-wrap justify-evenly gap-4 py-4">
+      {/* Recipe Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
         {recipes.map((recipe, index) => (
-          <RecipeCard recipe={recipe} key={index} />
+          <div
+            key={index}
+            className="transform hover:-translate-y-2 transition-transform duration-300"
+          >
+            <RecipeCard recipe={recipe} />
+          </div>
         ))}
       </div>
 
+      {/* Floating Bottom Nav */}
       <Link
         to="user-recipes"
-        className="fixed bottom-2 text-white bg-[#030219] h-12 w-48 flex justify-center items-center rounded-md font-medium"
+        className="fixed bottom-6 left-1/2 -translate-x-1/2 text-white bg-slate-900 h-14 px-8 flex justify-center items-center rounded-full font-bold shadow-2xl shadow-slate-900/30 hover:bg-black hover:scale-105 transition-all gap-3"
       >
-        Your Recipes
+        <Icon icon="lucide:chef-hat" className="size-5" />
+        Your Private Collection
       </Link>
     </div>
   );
