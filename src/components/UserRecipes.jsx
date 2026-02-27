@@ -12,6 +12,7 @@ export default function UserRecipes() {
   const [userRecipes, setUserRecipes] = useState([]);
   const [openModal, setOpenModal] = useState(false);
   const [deleteData, setDeleteData] = useState({ id: "", name: "" });
+  const [loading, setLoading] = useState(true);
 
   const handleOpenModal = (id, name) => {
     setDeleteData({ id, name });
@@ -32,132 +33,156 @@ export default function UserRecipes() {
         },
       });
 
-      if (!response.ok) {
-        throw new Error(response.statusText);
-      }
+      if (!response.ok) throw new Error(response.statusText);
 
       setUserRecipes((prev) =>
-        prev.filter((recipe) => recipe.id !== deleteData.id)
+        prev.filter((recipe) => recipe.id !== deleteData.id),
       );
-
       setDeleteData({ id: "", name: "" });
     } catch (error) {
       console.error(error);
     }
   };
 
-  const fetchRecentRecipes = async () => {
+  const fetchData = async () => {
+    setLoading(true);
     const authToken = localStorage.getItem("authToken");
+    const headers = { Authorization: `Bearer ${authToken}` };
 
     try {
-      const response = await fetch(`${backendURL}/api/recent-recipes`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        },
-      });
-      if (!response.ok) {
-        throw new Error(response.statusText);
+      // Fetch both in parallel for better performance
+      const [userRes, recentRes] = await Promise.all([
+        fetch(`${backendURL}/api/recipes`, { headers }),
+        fetch(`${backendURL}/api/recent-recipes`, { headers }),
+      ]);
+
+      if (userRes.ok) {
+        const userData = await userRes.json();
+        setUserRecipes(userData.recipes);
       }
 
-      const receivedData = await response.json();
-      setRecentRecipes(receivedData.recentRecipes);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const fetchUserRecipes = async () => {
-    const authToken = localStorage.getItem("authToken");
-    try {
-      const response = await fetch(`${backendURL}/api/recipes`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        },
-      });
-      if (!response.ok) {
-        throw new Error(response.statusText);
+      if (recentRes.ok) {
+        const recentData = await recentRes.json();
+        setRecentRecipes(recentData.recentRecipes);
       }
-
-      const receivedData = await response.json();
-      console.log(receivedData.recipes);
-      setUserRecipes(receivedData.recipes);
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchUserRecipes();
-    fetchRecentRecipes();
+    fetchData();
   }, []);
 
+  // Helper for empty states
+  const EmptyState = ({ message }) => (
+    <div className="text-center py-10 text-gray-500 border-2 border-dashed border-gray-200 rounded-xl w-full">
+      <Icon icon="mdi:recipe" className="mx-auto size-10 mb-2 text-gray-400" />
+      <p>{message}</p>
+    </div>
+  );
+
   return (
-    <div className="w-screen p-2 flex flex-col gap-3 items-center">
-      <header className="w-full flex justify-between items-end">
-        <Logo />
+    <div className="min-h-screen bg-gray-50 w-full flex flex-col items-center">
+      {/* Navbar/Header */}
+      <header className="w-full bg-white shadow-sm sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+          <Logo />
+          <Link
+            to="create"
+            className="flex items-center gap-2 text-sm text-white bg-[#030219] hover:bg-gray-800 py-2 px-4 rounded-full font-semibold transition-colors"
+          >
+            <Icon icon="material-symbols:add" className="size-5" />
+            Create Recipe
+          </Link>
+        </div>
       </header>
 
-      <h2 className=" w-full mt-4 font-bold text-sm">Your Recipes</h2>
-      <div className="overflow-x-auto w-full custom-scroll">
-        <div className="flex gap-5 w-auto py-1">
-          {userRecipes.map((recipe, index) => (
-            <RecipeCard
-              recipe={recipe}
-              key={index}
-              isOwner={true}
-              openModal={(id, name) => handleOpenModal(id, name)}
-            />
-          ))}
-        </div>
-      </div>
+      {/* Main Content */}
+      <main className="w-full max-w-7xl px-4 py-6 flex flex-col gap-8">
+        {/* Your Recipes Section */}
+        <section>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="font-bold text-2xl text-gray-900">Your Recipes</h2>
+            <span className="text-sm text-gray-500 font-medium bg-white px-3 py-1 rounded-full shadow-inner border">
+              {userRecipes.length} Total
+            </span>
+          </div>
 
-      <h2 className=" w-full mt-4 font-bold text-sm">
-        Recently Visited Recipes ({recentRecipes.length})
-      </h2>
-      <div className="overflow-x-auto w-full custom-scroll">
-        <div className="flex gap-5 w-auto py-1">
-          {recentRecipes.map((recentRecipe, index) => (
-            <RecipeCard recipe={recentRecipe.recipe} key={index} />
-          ))}
-        </div>
-      </div>
+          {loading ? (
+            <div className="text-center py-10">Loading...</div>
+          ) : userRecipes.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {userRecipes.map((recipe) => (
+                <RecipeCard
+                  recipe={recipe}
+                  key={recipe.id}
+                  isOwner={true}
+                  openModal={(id, name) => handleOpenModal(id, name)}
+                />
+              ))}
+            </div>
+          ) : (
+            <EmptyState message="You haven't created any recipes yet." />
+          )}
+        </section>
 
-      <Link
-        to="create"
-        className="fixed bottom-2 text-white bg-[#030219] h-12 w-48 flex justify-center items-center rounded-md font-medium"
-      >
-        Create Recipes
-      </Link>
+        {/* Recently Visited Section */}
+        <section>
+          <h2 className="font-bold text-xl text-gray-800 mb-4">
+            Recently Viewed
+          </h2>
 
+          {recentRecipes.length > 0 ? (
+            <div className="flex gap-5 overflow-x-auto pb-4 custom-scroll">
+              {recentRecipes.map((recentRecipe, index) => (
+                <div className="flex-none w-72" key={index}>
+                  <RecipeCard recipe={recentRecipe.recipe} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyState message="Your recent history is empty." />
+          )}
+        </section>
+      </main>
+
+      {/* Improved Modal */}
       <Modal
         open={openModal}
         onClose={handleCloseModal}
         aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
       >
-        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white flex flex-col items-center justify-start py-4 w-11/12 gap-2 rounded-xl modal-shadow">
-          <Icon
-            icon="material-symbols:delete"
-            className="size-10 text-red-400"
-          />
-          <p className=" text-center font-medium text-gray-400">
-            Are you sure you want to delete:
+        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white flex flex-col items-center justify-start p-6 w-11/12 max-w-sm gap-3 rounded-2xl shadow-2xl border">
+          <div className="p-3 bg-red-100 rounded-full">
+            <Icon
+              icon="material-symbols:delete-outline"
+              className="size-8 text-red-600"
+            />
+          </div>
+          <h3 className="text-lg font-bold text-gray-900">Delete Recipe</h3>
+          <p className="text-center text-gray-500 text-sm">
+            Are you sure you want to delete{" "}
+            <span className="font-semibold text-gray-700">
+              "{deleteData.name}"
+            </span>
+            ? This action cannot be undone.
           </p>
-          <span className="font-bold text-gray-600">{deleteData.name}</span>
-          <div className="flex justify-center items-center gap-4 mt-4">
+
+          <div className="flex justify-center items-center gap-3 mt-5 w-full">
             <button
-              className="border border-gray-300 py-1 px-3 rounded-lg font-semibold text-sm"
+              className="flex-1 border border-gray-300 py-2.5 rounded-lg font-semibold text-sm hover:bg-gray-50 transition"
               onClick={handleCloseModal}
             >
-              No, cancel
+              Cancel
             </button>
             <button
-              className="py-1 px-3 rounded-lg font-semibold text-sm bg-red-400 text-white"
+              className="flex-1 py-2.5 rounded-lg font-semibold text-sm bg-red-600 text-white hover:bg-red-700 transition"
               onClick={deleteRecipe}
             >
-              Yes, delete
+              Delete
             </button>
           </div>
         </div>
