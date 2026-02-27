@@ -268,7 +268,6 @@ export default function Dashboard() {
           </div>
         </div>
       </header>
-
       <div className="flex items-end justify-between mb-8 mt-4">
         <h2 className="font-serif text-3xl font-medium text-slate-900 italic">
           Trending Plates
@@ -278,19 +277,8 @@ export default function Dashboard() {
         </span>
       </div>
 
-      {/* Recipe Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-        {recipes.map((recipe, index) => (
-          <div
-            key={index}
-            className="transform hover:-translate-y-2 transition-transform duration-300"
-          >
-            <RecipeCard recipe={recipe} />
-          </div>
-        ))}
-      </div>
+      <RecipeGridSection recipes={recipes} />
 
-      {/* Floating Bottom Nav */}
       <Link
         to="user-recipes"
         className="fixed bottom-6 left-1/2 -translate-x-1/2 text-white bg-slate-900 h-14 px-8 flex justify-center items-center rounded-full font-bold shadow-2xl shadow-slate-900/30 hover:bg-black hover:scale-105 transition-all gap-3"
@@ -298,6 +286,155 @@ export default function Dashboard() {
         <Icon icon="lucide:chef-hat" className="size-5" />
         Your Private Collection
       </Link>
+    </div>
+  );
+}
+
+const chunkArray = (arr, size) => {
+  return Array.from({ length: Math.ceil(arr.length / size) }, (v, i) =>
+    arr.slice(i * size, i * size + size),
+  );
+};
+
+function RecipeGridSection({ recipes, isOwner, openModal }) {
+  if (!recipes || recipes.length === 0) return null;
+
+  // 1. Mobile & Small Screen Layout (1 Column)
+  if (recipes.length < 4) {
+    return (
+      // Changed to flex-col for mobile, md:flex-row for larger
+      <div className="flex flex-col md:flex-row gap-4">
+        {recipes.map((recipe) => (
+          <RecipeCard
+            key={recipe.id}
+            recipe={recipe}
+            isOwner={isOwner}
+            openModal={openModal}
+            // Use full height on mobile, constrained on desktop
+            heightClass="h-60"
+          />
+        ))}
+      </div>
+    );
+  }
+
+  const recipeChunks = chunkArray(recipes, 8);
+
+  return (
+    <div className="w-full">
+      {recipeChunks.map((chunk, chunkIndex) => {
+        return (
+          // 2. Responsive Grid Structure
+          // Mobile: 1 column. Tablet+: 2 columns
+          <div
+            key={chunkIndex}
+            className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4"
+          >
+            {/* --- Column 1 --- */}
+            <div className="grid grid-cols-2 gap-4">
+              {/* Card 1 - Span full width on mobile if you want, or keep 2 col */}
+              <div className="col-span-1">
+                <RecipeCard
+                  key={chunk[0].id}
+                  recipe={chunk[0]}
+                  isOwner={isOwner}
+                  openModal={openModal}
+                  heightClass="h-72"
+                />
+              </div>
+
+              {/* Card 2 */}
+              {chunk.length > 1 && (
+                <div className="col-span-1">
+                  <RecipeCard
+                    key={chunk[1].id}
+                    recipe={chunk[1]}
+                    isOwner={isOwner}
+                    openModal={openModal}
+                    heightClass="h-72 md:h-96"
+                  />
+                </div>
+              )}
+
+              {/* Card 3 - Complex layout only applies on desktop */}
+              {chunk.length > 2 && (
+                <div className="col-span-1 md:-translate-y-24">
+                  <RecipeCard
+                    key={chunk[2].id}
+                    recipe={chunk[2]}
+                    isOwner={isOwner}
+                    openModal={openModal}
+                    heightClass="h-72 md:h-96"
+                  />
+                </div>
+              )}
+
+              {/* Card 4 */}
+              {chunk.length > 3 && (
+                <div className="col-span-1">
+                  <RecipeCard
+                    key={chunk[3].id}
+                    recipe={chunk[3]}
+                    isOwner={isOwner}
+                    openModal={openModal}
+                    heightClass="h-72"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* --- Column 2 (Hidden or rearranged on mobile) --- */}
+            {/* You might want to hide this on mobile if the layout looks bad,
+                or let it stack naturally */}
+            <div className="grid grid-cols-2 gap-4">
+              {chunk.length > 4 && (
+                <div className="col-span-1">
+                  <RecipeCard
+                    key={chunk[4].id}
+                    recipe={chunk[4]}
+                    isOwner={isOwner}
+                    openModal={openModal}
+                    heightClass="h-72"
+                  />
+                </div>
+              )}
+              {chunk.length > 5 && (
+                <div className="col-span-1">
+                  <RecipeCard
+                    key={chunk[5].id}
+                    recipe={chunk[5]}
+                    isOwner={isOwner}
+                    openModal={openModal}
+                    heightClass="h-72 md:h-96"
+                  />
+                </div>
+              )}
+              {chunk.length > 6 && (
+                <div className="col-span-1 md:-translate-y-24">
+                  <RecipeCard
+                    key={chunk[6].id}
+                    recipe={chunk[6]}
+                    isOwner={isOwner}
+                    openModal={openModal}
+                    heightClass="h-72 md:h-96"
+                  />
+                </div>
+              )}
+              {chunk.length > 7 && (
+                <div className="col-span-1">
+                  <RecipeCard
+                    key={chunk[7].id}
+                    recipe={chunk[7]}
+                    isOwner={isOwner}
+                    openModal={openModal}
+                    heightClass="h-72"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
