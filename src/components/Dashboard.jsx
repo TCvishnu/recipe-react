@@ -148,15 +148,12 @@ export default function Dashboard() {
     <div className="min-h-screen w-full bg-[#fcfaf7] text-slate-900 font-sans p-6 pb-28">
       {/* Editorial Header */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-slate-100">
-        <div className="max-w-[1700px] mx-auto px-6 h-20 flex items-center justify-between">
+        <div className="max-w-[1700px] mx-auto px-6 h-20 flex items-center justify-between gap-4">
           {/* Left: Logo */}
-          <div className="flex-shrink-0">
-            <Logo />
-          </div>
+          <Logo />
 
-          {/* Center: Improved Unified Search Container */}
-          <div className="hidden md:flex items-center gap-0 bg-slate-50 border border-slate-200 rounded-full h-12 p-1 max-w-2xl w-full transition-all">
-            {/* Icon/Toggle inside the bar for better flow */}
+          {/* Center: Unified Search Container */}
+          <div className="hidden md:flex items-center gap-0 bg-slate-50 border border-slate-200 rounded-full h-12 p-1 max-w-xl w-full transition-all">
             <button
               title={
                 isSearchingByName
@@ -209,62 +206,91 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Right: Logout */}
-          <button
-            className="flex items-center gap-2 text-slate-600 hover:text-sky-600 font-medium text-sm transition-colors"
-            onClick={handleLogout}
-          >
-            <Icon icon="lucide:log-out" className="size-4" />
-            Logout
-          </button>
-        </div>
-
-        {/* Mobile View: Tighter integration */}
-        <div className="md:hidden px-4 pb-4">
-          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-2xl p-1.5">
-            <div className="flex-grow relative">
-              {isSearchingByName ? (
-                <input
-                  onChange={handleSearch}
-                  className="w-full h-10 bg-transparent outline-none px-3 text-sm text-slate-900"
-                  placeholder="Search..."
-                />
-              ) : (
-                <Select
-                  className="w-full text-sm"
-                  styles={{
-                    ...customSelectStyles,
-                    control: (base) => ({
-                      ...base,
-                      height: "40px",
-                      minHeight: "40px",
-                      borderRadius: "12px",
-                      backgroundColor: "transparent",
-                      border: "none",
-                      boxShadow: "none",
-                    }),
-                  }}
-                  components={animatedComponents}
-                  onChange={handleSelectedTags}
-                  options={foodTags.map((tag) => ({ label: tag, value: tag }))}
-                  isMulti
-                  placeholder="Tags..."
-                />
-              )}
-            </div>
-            <button
-              className="flex-shrink-0 size-10 rounded-xl flex items-center justify-center bg-slate-900 text-white"
-              onClick={() => setIsSearchingByName(!isSearchingByName)}
+          <div className="flex items-center gap-1">
+            {/* Private Collection Button - Minimalist */}
+            <Link
+              to="user-recipes"
+              className="hidden md:flex items-center gap-2.5 text-sm font-medium text-slate-700 hover:text-slate-950 h-11 px-4 rounded-xl hover:bg-slate-100 transition-all"
             >
               <Icon
-                icon={
-                  isSearchingByName
-                    ? "tabler:tag-filled"
-                    : "icon-park-solid:search"
-                }
-                className="size-5"
+                icon="lucide:chef-hat"
+                className="size-4.5 text-slate-500"
               />
+              Your Collection
+            </Link>
+
+            {/* Logout Button - Minimalist */}
+            <button
+              className="flex items-center gap-2.5 text-sm font-medium text-slate-500 hover:text-red-600 h-11 px-4 rounded-xl hover:bg-red-50 transition-all"
+              onClick={handleLogout}
+            >
+              <Icon icon="lucide:log-out" className="size-4.5" />
+              <span className="hidden md:inline">Logout</span>
             </button>
+          </div>
+        </div>
+
+        {/* Mobile View */}
+        <div className="md:hidden px-4 pb-4">
+          <div className="flex items-center gap-2 mb-3">
+            {/* Mobile Search */}
+            <div className="flex-grow flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-2xl p-1.5">
+              <div className="flex-grow relative">
+                {isSearchingByName ? (
+                  <input
+                    onChange={handleSearch}
+                    className="w-full h-10 bg-transparent outline-none px-3 text-sm text-slate-900"
+                    placeholder="Search..."
+                  />
+                ) : (
+                  <Select
+                    className="w-full text-sm"
+                    styles={{
+                      ...customSelectStyles,
+                      control: (base) => ({
+                        ...base,
+                        height: "40px",
+                        minHeight: "40px",
+                        borderRadius: "12px",
+                        backgroundColor: "transparent",
+                        border: "none",
+                        boxShadow: "none",
+                      }),
+                    }}
+                    components={animatedComponents}
+                    onChange={handleSelectedTags}
+                    options={foodTags.map((tag) => ({
+                      label: tag,
+                      value: tag,
+                    }))}
+                    isMulti
+                    placeholder="Tags..."
+                  />
+                )}
+              </div>
+              <button
+                className="flex-shrink-0 size-10 rounded-xl flex items-center justify-center bg-slate-900 text-white"
+                onClick={() => setIsSearchingByName(!isSearchingByName)}
+              >
+                <Icon
+                  icon={
+                    isSearchingByName
+                      ? "tabler:tag-filled"
+                      : "icon-park-solid:search"
+                  }
+                  className="size-5"
+                />
+              </button>
+            </div>
+
+            {/* Mobile Collection Icon Button */}
+            <Link
+              to="user-recipes"
+              className="flex-shrink-0 size-12 flex items-center justify-center rounded-2xl bg-white border border-slate-200 text-slate-900 hover:bg-slate-50 transition-all"
+              title="Your Collection"
+            >
+              <Icon icon="lucide:chef-hat" className="size-6" />
+            </Link>
           </div>
         </div>
       </header>
