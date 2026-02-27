@@ -18,7 +18,6 @@ export default function Dashboard() {
   const [recipePage, setRecipePage] = useState(1);
   const [recipes, setRecipes] = useState([]);
   const [isSearchingByName, setIsSearchingByName] = useState(true);
-  const [selectedTags, setSelectedTags] = useState([]);
 
   // --- EXISTING FUNCTIONS (Kept as is) ---
   const handleLogout = async () => {
@@ -304,14 +303,6 @@ export default function Dashboard() {
       </div>
 
       <RecipeGridSection recipes={recipes} />
-
-      <Link
-        to="user-recipes"
-        className="fixed bottom-6 left-1/2 -translate-x-1/2 text-white bg-slate-900 h-14 px-8 flex justify-center items-center rounded-full font-bold shadow-2xl shadow-slate-900/30 hover:bg-black hover:scale-105 transition-all gap-3"
-      >
-        <Icon icon="lucide:chef-hat" className="size-5" />
-        Your Private Collection
-      </Link>
     </div>
   );
 }
